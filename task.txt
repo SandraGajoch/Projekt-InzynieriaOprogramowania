@@ -1,0 +1,1 @@
+Oblicz a, jeśli (b + c)^2 = a. Dane dla b i c znajdują sie w pliku z danymi.
