@@ -1,15 +1,16 @@
 import sys, glob, os
 from tkinter import *
 from tkinter import filedialog
-
+import matplotlib.pyplot as plt
 ListaPlikow=[]#lista sciezek dostepu do plikow
 pliki=[] #lista nazw plików
+poloczenia={} #lista polaczen
 
 #zamykanie okienka interfejsu
 def zamknij(zdarzenie):
     okno.quit()
     okno.destroy()
-y=len(pliki)
+
 #dodawnie plików
 def dodaj(zdarzenie):
     r= filedialog.askopenfilenames(initialdir="/", title="wybierz plik")# , filetypes=(("text files", ".*"), ("all files", ".")))
@@ -18,13 +19,38 @@ def dodaj(zdarzenie):
         ListaPlikow.append(r[licznik])
         str1=ListaPlikow[licznik]
         x=str1.split('/')
-        pliki.append(x[-1])
+        y=x[-1]
+        z=y.split('.')
+        pliki.append(z[0])
         licznik+=1
 
+def szukaniepolaczenia(szukane, nazwy, sciezki):
+    kontener={} #przechowywanie polaczen
+    y=0
+    for x in sciezki:
+        plik1 = open(ListaPlikow[y])
+        plik = plik1.read()
+        zbior=[]
+        for linia in plik.split('/n'):   # dzieli tekst na linijki
+            for wyraz in nazwy:
+                znalezienie=linia.find(wyraz) #szuka wyrazów (wart. -1 gdy nie znajdzie)
+                if znalezienie>-1:
+                    zbior.append(linia[znalezienie:znalezienie+len(wyraz)]) #to trzeba
+#                    print(linia[znalezienie:znalezienie+10])
+                else:
+                    continue
+            kontener[nazwy[y]] = zbior
+        y+=1
+    return kontener
+
+
 def historyjka1(zdarzenie):
-    with open(ListaPlikow[0])as pliki[0]:
-        for linia in pliki[0]:
-            print(linia.split())
+    slowa=['include', 'required', 'import', 'open'] #slowa do szukania
+    poloczenia = szukaniepolaczenia(slowa, pliki, ListaPlikow)
+    print(poloczenia.items())
+    print(pliki)
+    i=generate_edges(poloczenia)
+    print(i)
 
 def historyjka2(zdarzenie):
     okno.quit()
@@ -34,7 +60,7 @@ def historyjka3(zdarzenie):
     okno.quit()
     okno.destroy()
 
-#rysowanie okienka interfejsu
+#rysowanie okienka interfejsu/
 okno = Tk()
 etykieta = Label(okno, text="Inzynieria oprogramowania", font=("Arial", 24, "italic"))
 etykieta.pack(expand=YES, fill=BOTH)
