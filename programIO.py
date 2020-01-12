@@ -51,7 +51,7 @@ def nazwyfunkcji(sciezki):
         plik = plik1.read()
         szukaj = r"def[\s]+([a-zA-Z_0-9]+)\(.*\)[ ]*\:" #szuka zadanego wzorca, inspiracja https://docs.python.org/3.1/library/re.html
         funkcje = re.findall(szukaj, plik, re.MULTILINE)
-        print(funkcje)
+        #print(funkcje)
     return funkcje
 
 def szukaniepolaczenia_funkcje(szukane, sciezki):
@@ -65,7 +65,7 @@ def szukaniepolaczenia_funkcje(szukane, sciezki):
             if z==-1:
                 z+=1
             else:
-                print(definicja[0:10])
+                #print(definicja[0:10])
                 zbior = []
                 for linia in definicja.split('/n'):
                     for wyraz in szukane:
@@ -90,7 +90,6 @@ def historyjka1(zdarzenie):
 
 def historyjka2(zdarzenie):
     funkcje_nazwy=nazwyfunkcji(ListaPlikow)  # szuka polaczen
-    print(funkcje_nazwy)
     poloczeniah2 = szukaniepolaczenia_funkcje(funkcje_nazwy, ListaPlikow)  # szuka polaczen
     print(poloczeniah2.items())  # wypisuje cały słownik zależności między plikami
 
