@@ -1,10 +1,12 @@
 import sys, glob, os
 from tkinter import *
 from tkinter import filedialog
+import  re
 import matplotlib.pyplot as plt
 ListaPlikow=[]#lista sciezek dostepu do plikow
 pliki=[] #lista nazw plików
-poloczenia={} #lista polaczen
+poloczeniah1={} #lista polaczen
+poloczeniah2={}
 
 #zamykanie okienka interfejsu
 def zamknij(zdarzenie):
@@ -24,11 +26,11 @@ def dodaj(zdarzenie):
         pliki.append(z[0])
         licznik+=1
 
-def szukaniepolaczenia(szukane, nazwy, sciezki):
+def szukaniepolaczenia_pliki(szukane, nazwy, sciezki):
     kontener={} #przechowywanie polaczen
     y=0
     for x in sciezki:
-        plik1 = open(ListaPlikow[y])
+        plik1 = open(sciezki[y])
         plik = plik1.read()
         zbior=[]
         for linia in plik.split('/n'):   # dzieli tekst na linijki
@@ -39,22 +41,58 @@ def szukaniepolaczenia(szukane, nazwy, sciezki):
 #                    print(linia[znalezienie:znalezienie+10])
                 else:
                     continue
-            kontener[nazwy[y]] = zbior
+            kontener[nazwy[y]] = zbior #dodaje do słownika znalezione polaczenia
         y+=1
     return kontener
 
+def nazwyfunkcji(sciezki):
+    for x in sciezki:
+        plik1 = open(x)
+        plik = plik1.read()
+        szukaj = r"def[\s]+([a-zA-Z_0-9]+)\(.*\)[ ]*\:" #szuka zadanego wzorca, inspiracja https://docs.python.org/3.1/library/re.html
+        funkcje = re.findall(szukaj, plik, re.MULTILINE)
+        print(funkcje)
+    return funkcje
+
+def szukaniepolaczenia_funkcje(szukane, sciezki):
+    kontener={} #przechowywanie polaczen
+    y=0
+    for x in sciezki:
+        plik1 = open(sciezki[y])
+        plik = plik1.read()
+        z=-1
+        for definicja in plik.split('def'+' '):   # dzieli tekst na linijki
+            if z==-1:
+                z+=1
+            else:
+                print(definicja[0:10])
+                zbior = []
+                for linia in definicja.split('/n'):
+                    for wyraz in szukane:
+                        znalezienie = linia.find(wyraz)  # szuka wyrazów (wart. -1 gdy nie znajdzie)
+                        if znalezienie > -1:
+                            zbior.append(definicja[znalezienie:znalezienie + len(wyraz)])  # to trzeba
+                        #                    print(linia[znalezienie:znalezienie+10])
+                        else:
+                            continue
+                if len(zbior)>=1:
+                    kontener[zbior[0]] = zbior[1:]  # dodaje do słownika znalezione polaczenia
+                else:
+                    continue
+                y+=1
+    return kontener
 
 def historyjka1(zdarzenie):
     slowa=['include', 'required', 'import', 'open'] #slowa do szukania
-    poloczenia = szukaniepolaczenia(slowa, pliki, ListaPlikow)
-    print(poloczenia.items())
-    print(pliki)
-    i=generate_edges(poloczenia)
-    print(i)
+    poloczeniah1 = szukaniepolaczenia_pliki(slowa, pliki, ListaPlikow) #szuka polaczen
+    print(poloczeniah1.items()) #wypisuje cały słownik zależności między plikami
+    #print(pliki)
 
 def historyjka2(zdarzenie):
-    okno.quit()
-    okno.destroy()
+    funkcje_nazwy=nazwyfunkcji(ListaPlikow)  # szuka polaczen
+    print(funkcje_nazwy)
+    poloczeniah2 = szukaniepolaczenia_funkcje(funkcje_nazwy, ListaPlikow)  # szuka polaczen
+    print(poloczeniah2.items())  # wypisuje cały słownik zależności między plikami
 
 def historyjka3(zdarzenie):
     okno.quit()
