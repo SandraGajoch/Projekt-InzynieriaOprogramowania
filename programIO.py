@@ -5,8 +5,8 @@ import  re
 import matplotlib.pyplot as plt
 ListaPlikow=[]#lista sciezek dostepu do plikow
 pliki=[] #lista nazw plików
-poloczeniah1={} #lista polaczen miedzy plikami
-poloczeniah2={} #lista polaczen miedzy funkcjami
+poloczeniah1={} #lista polaczen
+poloczeniah2={}
 
 #zamykanie okienka interfejsu
 def zamknij(zdarzenie):
@@ -44,8 +44,8 @@ def szukaniepolaczenia_pliki(szukane, nazwy, sciezki):
             wystepowanie = {}
             for c in zbior:
                 wystepowanie[c] = wystepowanie.get(c, 0) + 1
-            #print(wystepowanie)
-            kontener[nazwy[y]] = wystepowanie #dodaje do słownika znalezione polaczenia
+            # print(wystepowanie)
+            kontener[nazwy[y]] = zbior #dodaje do słownika znalezione polaczenia
         y+=1
     return kontener
 
@@ -83,7 +83,6 @@ def szukaniepolaczenia_funkcje(szukane, sciezki):
                     kontener[zbior[0]] = zbior[1:]  # dodaje do słownika znalezione polaczenia
                 else:
                     continue
-
                 y+=1
     return kontener
 
