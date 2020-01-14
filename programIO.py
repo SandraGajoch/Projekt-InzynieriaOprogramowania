@@ -41,6 +41,10 @@ def szukaniepolaczenia_pliki(szukane, nazwy, sciezki):
 #                    print(linia[znalezienie:znalezienie+10])
                 else:
                     continue
+            wystepowanie = {}
+            for c in zbior:
+                wystepowanie[c] = wystepowanie.get(c, 0) + 1
+            # print(wystepowanie)
             kontener[nazwy[y]] = zbior #dodaje do słownika znalezione polaczenia
         y+=1
     return kontener
