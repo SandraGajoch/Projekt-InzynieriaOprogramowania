@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from IPython.display import Image, display
 import pydot
 import matplotlib as mpl
+import networkx as nx
 
 ListaPlikow=[]#lista sciezek dostepu do plikow
 pliki=[] #lista nazw plików
@@ -96,16 +97,59 @@ def szukaniepolaczenia_funkcje(szukane, sciezki):
                 y+=1
     return kontener
 
+# przyjmuje jeden argument 'relationshipMap' ktyry wygląda tak:
+# dict_items(
+#	[
+#		('task', {}),
+# 		('result', {}), 
+#		('ReadFileXlsx', 	{'task': 1, 'result': 1}), 
+#		('programIO', {})
+#	]
+#)
+def createDirectedGraphs(relationshipMap):  
+    G = nx.DiGraph() # włączenie diagramu skierowanego
+    G.add_nodes_from(relationshipMap.items()) # dodaje wszystki punkty (nazwy plików) (nazwy plików) ['task', 'result', 'ReadFileXlsx', 'programIO'] | G.add_node -osobne dodawanie 
+    pairNode = [] # pary punktów potrzebne do pomalowania itp ('task', 'result'), ('result', 'ReadFileXlsx')
+                  # to znaczy, ze miedzy tymi punktami bedzie kreska i strzałka 
+
+    # petle robia relacje miedzy nodami G.add_edges_from([(k, key)]  
+    # ustawiaja wagi weight=value  
+    # oraz dodaje pary do pairNode.append((k, key))
+    for k, v in relationshipMap.items(): 
+        for key, value in v.items():
+            G.add_edges_from([(k, key)], weight=value)#dodawanie polaczen miedzy punktami, kreska na grafie
+            pairNode.append((k, key)) #zbiera pary nazw plikow do ukierunkowania polaczenia 
+
+    pairWeight =dict([((u,v,),d['weight'])
+                 for u,v,d in G.edges(data=True)]) # ustaw wagi 
+
+    pos = nx.spring_layout(G) # ustaw layout
+
+    # wlasciwosci punktow ustaw kolor node_color = 'red' 
+    # ustaw rozmiar node_size = 500
+    nx.draw_networkx_nodes(G, pos, node_color = 'red', node_size = 500) 
+    nx.draw_networkx_labels(G, pos) # ustaw napisy na nodach 
+
+    # wlasciwosci strzalek. co polaczyc edgelist=pairNode 
+    # kolor strzalek edge_color='black' 
+    # uruchomienie strzalek arrows=True
+    nx.draw_networkx_edges(G, pos, edgelist=pairNode, edge_color='black', arrows=True) 
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=pairWeight) # wlacza numery z wagami na strzalkach
+
+    plt.show() # pokazuje okno
+
 def historyjka1(zdarzenie):
     slowa=['include', 'required', 'import', 'open'] #slowa do szukania
     poloczeniah1 = szukaniepolaczenia_pliki(slowa, pliki, ListaPlikow) #szuka polaczen
     print(poloczeniah1.items()) #wypisuje cały słownik zależności między plikami
     print(pliki)
+    createDirectedGraphs(poloczeniah1)
 
 def historyjka2(zdarzenie):
     funkcje_nazwy=nazwyfunkcji(ListaPlikow)  # szuka polaczen
     poloczeniah2 = szukaniepolaczenia_funkcje(funkcje_nazwy, ListaPlikow)  # szuka polaczen
     print(poloczeniah2.items())  # wypisuje cały słownik zależności między plikami
+    createDirectedGraphs(poloczeniah2)
 
 def historyjka3(zdarzenie):
     okno.quit()
