@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from IPython.display import Image, display
 import pydot
 import matplotlib as mpl
+import ntpath
 
 ListaPlikow=[]#lista sciezek dostepu do plikow
 pliki=[] #lista nazw plików
