@@ -96,6 +96,67 @@ def szukaniepolaczenia_funkcje(szukane, sciezki):
                 y+=1
     return kontener
 
+def getFileModule(sciezki):
+    # result = []
+    result = {}
+    pattern = re.compile("import .* as .*")
+    for fileToRead in sciezki:
+        for i, line in enumerate(open(fileToRead)):
+            for match in re.finditer(pattern, line):
+                lastWordInportFileFromModule = match.group().split()[-1]
+                nazwa_modulu = match.group().split()[1]
+                if lastWordInportFileFromModule != '.*")':
+                    result[nazwa_modulu] = lastWordInportFileFromModule
+                    # result.append(lastWordInportFileFromModule)
+        
+    print(result)
+    return result
+
+# metoda szuka jakich użyliśmy funkcji z innych modułów
+def funkcje_z_innych_modulow(nazwa_modulu_i_alias, ListaPlikow):
+    #zmienna która bedzie wynikiem i bedzie trzymać powiazania 
+    kontener={}
+    #iteracja po mapie która zawiera nawe modulu i jego alias 
+    for k, v in nazwa_modulu_i_alias.items(): 
+        # pattern po którym będziemy szukac czy jest wywołana jakaś metoda dla modułu
+        pattern = re.compile(v + "..*(.*)")
+        # zmienna do której zapiszemy jaka metoda została wywołana i jaką ma wagę 
+        wystepowanie = {}
+        # iteracja po pliku
+        for i, line in enumerate(open(ListaPlikow[0])):
+            # szukamy paternu w liniach
+            for match in re.finditer(pattern, line):
+                # pobieramy nazwę znalezionej metody
+                value = match.group().split("(")[0]
+                # jeżeli zmienna value nie jest pusta czyli coś znalazła wchodzimy do ifa
+                if value: 
+                    # zapisujemy znaleziona nazwe metody do zmiennej: wystepowanie (narazie waga zawsze 1)
+                    wystepowanie[match.group().split("(")[0]] = 1 
+        # zmisujemy do zmiennej kontener pod kluczem nazwy modulu znalezione funkcjie 
+        kontener[k] = wystepowanie
+            
+    return kontener
+
+# pobiera nazwe modulu z podanego pliku
+def pobierz_nazwe_pliku(ListaPlikow):
+    # pobieram nazwe modulu z podanego pliku 
+    return ntpath.basename(ListaPlikow[0]).split(".")[0]
+
+# Jakie moduly sa wywoływane w module podanym 
+def szukaj_jakie_moduly_sa_wywolane(nazwa_modulu, nazwa_modulu_i_alias):
+    # zwracany wynik mapa 
+    kontener={}
+    # nazwa inny moduł + waga
+    wystepowanie = {}
+    #iteracja po nazwach metod i aliasach
+    for k, v in nazwa_modulu_i_alias.items():  
+        # zapisujemy do zmiennej wystepowanie pod kluczem nazwe modułu a jako wage narazie 1
+        wystepowanie[k] = 1
+
+    # przypisujemy do zmiennej kontener pod nazwa podanego modułu moduły z jakimi się łączy
+    kontener[nazwa_modulu] = wystepowanie
+    return kontener
+
 def historyjka1(zdarzenie):
     slowa=['include', 'required', 'import', 'open'] #slowa do szukania
     poloczeniah1 = szukaniepolaczenia_pliki(slowa, pliki, ListaPlikow) #szuka polaczen
@@ -108,6 +169,28 @@ def historyjka2(zdarzenie):
     print(poloczeniah2.items())  # wypisuje cały słownik zależności między plikami
 
 def historyjka3(zdarzenie):
+    # szuka jakimi moduly sa i jakie maja aliasy
+    nazwa_modulu_i_alias = getFileModule(ListaPlikow)
+
+    # pobiera nazwy funkcji w pobranym pliku
+    funkcje_nazwy_w_danym_pliku = nazwyfunkcji(ListaPlikow) 
+    # zrobienie odpowiedniego obiektu 
+    wykres_dwa_jakie_funkcje_z_danego_modulu = szukaniepolaczenia_funkcje(funkcje_nazwy_w_danym_pliku, ListaPlikow)
+
+    # szukamy ile i jakie funkcje zostawy wywolane z innych modulow
+    wykres_trzy_jakie_funkcje_z_innych_modulow = funkcje_z_innych_modulow(nazwa_modulu_i_alias, ListaPlikow)
+
+    # bierzemy nazwe modulu z wybranego pliku
+    nazwa_modulu = pobierz_nazwe_pliku(ListaPlikow)
+
+    # poloaczenia modułów 
+    wykres_modulow = szukaj_jakie_moduly_sa_wywolane(nazwa_modulu, nazwa_modulu_i_alias)
+
+    # stworzenie wykresów 
+    createDirectedGraphs(wykres_modulow) # graf powiazan modułów 
+    createDirectedGraphs(wykres_trzy_jakie_funkcje_z_innych_modulow) # graf powiazan modulów zewnetrznych z metodami
+    createDirectedGraphs(wykres_dwa_jakie_funkcje_z_danego_modulu) # graf powiazania modulu wybranego z funkcjami 
+
     okno.quit()
     okno.destroy()
 
